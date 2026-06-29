@@ -1,11 +1,11 @@
 {
   "name": "setup-swift",
-  "version": "3.0.0-beta.1",
+  "version": "2.4.0",
   "description": "Set up GitHub Actions workflow with Swift support",
   "private": true,
   "main": "lib/main.js",
   "engines": {
-    "node": ">=20",
+    "node": ">=24",
     "npm": ">=10"
   },
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/swift-actions/setup-swift.git"
+    "url": "git+https://github.com/step-security/swift-actions-setup-swift.git"
   },
   "keywords": [
     "github",
@@ -29,16 +29,17 @@
     "swiftenv",
     "swiftly"
   ],
-  "author": "Frederik Wallner",
+  "author": "step-security",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/swift-actions/setup-swift/issues"
+    "url": "https://github.com/step-security/swift-actions-setup-swift/issues"
   },
-  "homepage": "https://github.com/swift-actions/setup-swift#readme",
+  "homepage": "https://github.com/step-security/swift-actions-setup-swift#readme",
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@actions/tool-cache": "^2.0.2",
+    "axios": "^1.18.0",
     "getos": "^3.2.1",
     "semver": "^7.6.0"
   },

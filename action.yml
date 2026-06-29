@@ -1,6 +1,6 @@
 name: Setup Swift
 description: Setup a Swift environment on Ubuntu or macOS
-author: Frederik Wallner
+author: "step-security"
 inputs:
   swift-version:
     description: Swift version to configure
@@ -13,7 +13,7 @@ outputs:
   version:
     description: The full Swift version that was configured
 runs:
-  using: node20
+  using: node24
   main: dist/index.js
 branding:
   icon: "command"

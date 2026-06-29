@@ -27,13 +27,13 @@
 To run the action with the latest swift version available, simply add the action as a step in your workflow:
 
 ```yaml
-- uses: step-security/swift-actions-setup-swift@v3
+- uses: step-security/swift-actions-setup-swift@v2
 ```
 
 After the environment is configured you can run swift commands using the standard [`run`](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsrun) step:
 
 ```yaml
-- uses: step-security/swift-actions-setup-swift@v3
+- uses: step-security/swift-actions-setup-swift@v2
 - name: Get swift version
   run: swift --version # Swift 6.2
 ```
@@ -41,7 +41,7 @@ After the environment is configured you can run swift commands using the standar
 A specific Swift version can be set using the `swift-version` input:
 
 ```yaml
-- uses: step-security/swift-actions-setup-swift@v3
+- uses: step-security/swift-actions-setup-swift@v2
   with:
     swift-version: "5.1"
 - name: Get swift version
@@ -51,7 +51,7 @@ A specific Swift version can be set using the `swift-version` input:
 Also works with snapshots:
 
 ```yaml
-- uses: step-security/swift-actions-setup-swift@v3
+- uses: step-security/swift-actions-setup-swift@v2
   with:
     swift-version: "main-snapshot"
 ```
@@ -66,7 +66,7 @@ strategy:
     os: [ubuntu-latest, macos-latest]
     swift: ["5.4.3", "5.2.4"]
 steps:
-  - uses: step-security/swift-actions-setup-swift@v3
+  - uses: step-security/swift-actions-setup-swift@v2
     with:
       swift-version: ${{ matrix.swift }}
   - name: Get swift version
@@ -78,7 +78,7 @@ steps:
 If you are running on a runner that is not able to verify the GPG signature of the Swiftly package, you can skip the verification by setting the `skip-verify-signature` input to `true`.
 
 ```yaml
-- uses: step-security/swift-actions-setup-swift@v3
+- uses: step-security/swift-actions-setup-swift@v2
   with:
     skip-verify-signature: true
 ```
@@ -88,7 +88,7 @@ If you are running on a runner that is not able to verify the GPG signature of t
 YAML interprets eg. `5.0` as a float, this action will then interpret that as `5` which will result in eg. Swift 5.5 being resolved. Quote your inputs! Thus:
 
 ```
-- uses: step-security/swift-actions-setup-swift@v3
+- uses: step-security/swift-actions-setup-swift@v2
   with:
     swift-version: '5.0'
 ```
@@ -96,22 +96,10 @@ YAML interprets eg. `5.0` as a float, this action will then interpret that as `5
 Not:
 
 ```
-- uses: step-security/swift-actions-setup-swift@v3
+- uses: step-security/swift-actions-setup-swift@v2
   with:
     swift-version: 5.0
 ```
-
-## Keeping the action up-to-date
-
-You have two options for keeping this action up-to-date: either you define a specific version (like `v3.0.0`) or use the major version tag (like `v3`).
-
-### Specific version
-
-We recommend using the specific version tag together with [Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/about-dependabot-version-updates) to keep the action up-to-date. That way you will automatically get notifed when the action updates and you can read the changelog directly in the PR opened by dependabot.
-
-### Major version tag
-
-If you don't plan on keeping tabs on updates or don't want to use Dependabot but still would like to always use the latest version, you can use the main version tag.
 
 ## Legal
 

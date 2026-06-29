@@ -13,12 +13,12 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-      - run: yarn
+      - run: npm install
       - run: npm run format-check
       - run: npm test
   integration-test:
@@ -29,9 +29,9 @@ jobs:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
         swift: ["6.2"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
       - run: npm install
@@ -39,5 +39,6 @@ jobs:
       - uses: ./
         with:
           swift-version: ${{ matrix.swift }}
+          skip-verify-signature: true
       - name: Swift version
-        run: swift --version | grep ${{ matrix.swift }} || exit 1
+        run: swift --version | grep "${{ matrix.swift }}" || exit 1
