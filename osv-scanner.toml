@@ -1,0 +1,3 @@
+[[IgnoredVulns]]
+id = "GHSA-h67p-54hq-rp68"
+reason = "js-yaml: Quadratic complexity DoS on crafted YAML merge keys; not a dependency of this project, not used in production or dev code"
