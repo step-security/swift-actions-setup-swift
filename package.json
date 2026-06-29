@@ -1,0 +1,56 @@
+{
+  "name": "setup-swift",
+  "version": "3.0.0-beta.1",
+  "description": "Set up GitHub Actions workflow with Swift support",
+  "private": true,
+  "main": "lib/main.js",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "build": "tsc",
+    "pack": "ncc build",
+    "pack-source-map": "ncc build --source-map",
+    "format": "prettier --write .",
+    "format-check": "prettier --check .",
+    "test": "jest",
+    "all": "npm run format && npm run build && npm run pack && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swift-actions/setup-swift.git"
+  },
+  "keywords": [
+    "github",
+    "actions",
+    "swift",
+    "ci",
+    "swiftenv",
+    "swiftly"
+  ],
+  "author": "Frederik Wallner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/swift-actions/setup-swift/issues"
+  },
+  "homepage": "https://github.com/swift-actions/setup-swift#readme",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/tool-cache": "^2.0.2",
+    "getos": "^3.2.1",
+    "semver": "^7.6.0"
+  },
+  "devDependencies": {
+    "@types/getos": "^3.0.4",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.16",
+    "@types/semver": "^7.5.6",
+    "@vercel/ncc": "^0.38.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.5.3",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.8.3"
+  }
+}

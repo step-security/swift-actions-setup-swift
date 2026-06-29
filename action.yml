@@ -1,0 +1,20 @@
+name: Setup Swift
+description: Setup a Swift environment on Ubuntu or macOS
+author: Frederik Wallner
+inputs:
+  swift-version:
+    description: Swift version to configure
+    required: true
+    default: "latest"
+  skip-verify-signature:
+    description: Skip GPG signature verification where applicable
+    default: false
+outputs:
+  version:
+    description: The full Swift version that was configured
+runs:
+  using: node20
+  main: dist/index.js
+branding:
+  icon: "command"
+  color: "orange"
