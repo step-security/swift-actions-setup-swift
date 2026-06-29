@@ -1,15 +1,15 @@
 import { exec } from "@actions/exec";
 import * as core from "@actions/core";
 import * as toolCache from "@actions/tool-cache";
-import { OS } from "./os";
+import { OS, System } from "./os";
 
-export async function setupKeys(os: OS) {
+export async function setupKeys(system: System) {
   core.debug("Fetching verification keys");
   let path = await toolCache.downloadTool(
-    "https://swift.org/keys/all-keys.asc",
+    "https://swift.org/keys/all-keys.asc"
   );
 
-  if (os === "linux" || os === "darwin") {
+  if (system.os === OS.Ubuntu || system.os === OS.MacOS) {
     core.debug("Examining verification keys");
     await exec(`file "${path}"`);
     const isPlaintext = await exec(`gunzip --test "${path}"`, undefined, {
@@ -24,7 +24,7 @@ export async function setupKeys(os: OS) {
     ]);
   }
 
-  if (os === "win32") {
+  if (system.os === OS.Windows) {
     core.debug("Importing verification keys");
     await exec(`gpg --import "${path}"`);
   }
@@ -65,7 +65,7 @@ function refreshKeysFromServer(server: string): Promise<boolean> {
     .then((code) => code === 0)
     .catch((error) => {
       core.warning(
-        `An error occurred when trying to refresh keys from ${server}: ${error}`,
+        `An error occurred when trying to refresh keys from ${server}: ${error}`
       );
       return false;
     });

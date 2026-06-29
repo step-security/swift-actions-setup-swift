@@ -1,74 +1,48 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 8070:
+/***/ 8121:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.cmd = cmd;
-const core_1 = __nccwpck_require__(7484);
+exports.getVersion = getVersion;
+exports.versionFromString = versionFromString;
 const exec_1 = __nccwpck_require__(5236);
-/**
- * Runs a command and returns the output
- * @param command Command to run
- * @param args Arguments to pass to the command
- * @returns Output of the command
- */
-async function cmd(command, ...args) {
-    let stdout = "";
-    let stderr = "";
+async function getVersion(command = "swift", args = ["--version"]) {
+    let output = "";
+    let error = "";
     const options = {
         listeners: {
             stdout: (data) => {
-                stdout += data.toString();
+                output += data.toString();
             },
             stderr: (data) => {
-                stderr += data.toString();
+                error += data.toString();
             },
         },
     };
-    (0, core_1.debug)(`Running command: ${command} ${args.join(" ")}`);
-    const code = await (0, exec_1.exec)(command, args, options);
-    if (code !== 0) {
-        (0, core_1.error)(`Command failed with code ${code}`);
-        throw new Error("Error running command " + core_1.error);
+    await (0, exec_1.exec)(command, args, options);
+    if (!output && error) {
+        throw new Error("Error getting swift version " + error);
     }
-    (0, core_1.debug)(`Command output: ${stdout}`);
-    return stdout;
+    return versionFromString(output);
+}
+function versionFromString(subject) {
+    const match = subject.match(/Swift\ version (?<version>[0-9]+\.[0-9+]+(\.[0-9]+)?)/) || {
+        groups: { version: null },
+    };
+    if (!match.groups || !match.groups.version) {
+        return null;
+    }
+    return match.groups.version;
 }
 
 
 /***/ }),
 
-/***/ 63:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.equalVersions = equalVersions;
-const semver_1 = __nccwpck_require__(2088);
-/**
- * Compare two version strings.
- * @param a First version
- * @param b Second version
- * @returns True if the versions are equal
- */
-function equalVersions(a, b) {
-    if (!a || !b) {
-        return false;
-    }
-    const versionA = (0, semver_1.coerce)(a);
-    const versionB = (0, semver_1.coerce)(b);
-    return Boolean(versionA && versionB && (0, semver_1.eq)(versionA, versionB));
-}
-
-
-/***/ }),
-
-/***/ 4742:
+/***/ 2192:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -113,10 +87,11 @@ exports.refreshKeys = refreshKeys;
 const exec_1 = __nccwpck_require__(5236);
 const core = __importStar(__nccwpck_require__(7484));
 const toolCache = __importStar(__nccwpck_require__(3472));
-async function setupKeys(os) {
+const os_1 = __nccwpck_require__(6296);
+async function setupKeys(system) {
     core.debug("Fetching verification keys");
     let path = await toolCache.downloadTool("https://swift.org/keys/all-keys.asc");
-    if (os === "linux" || os === "darwin") {
+    if (system.os === os_1.OS.Ubuntu || system.os === os_1.OS.MacOS) {
         core.debug("Examining verification keys");
         await (0, exec_1.exec)(`file "${path}"`);
         const isPlaintext = await (0, exec_1.exec)(`gunzip --test "${path}"`, undefined, {
@@ -129,7 +104,7 @@ async function setupKeys(os) {
             `${isPlaintext ? "cat" : "zcat"} "${path}" | gpg --import`,
         ]);
     }
-    if (os === "win32") {
+    if (system.os === os_1.OS.Windows) {
         core.debug("Importing verification keys");
         await (0, exec_1.exec)(`gpg --import "${path}"`);
     }
@@ -170,7 +145,7 @@ function refreshKeysFromServer(server) {
 
 /***/ }),
 
-/***/ 582:
+/***/ 6876:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -186,59 +161,167 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__nccwpck_require__(8070), exports);
-__exportStar(__nccwpck_require__(4742), exports);
-__exportStar(__nccwpck_require__(5466), exports);
-__exportStar(__nccwpck_require__(63), exports);
-__exportStar(__nccwpck_require__(352), exports);
-
-
-/***/ }),
-
-/***/ 5466:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getOS = getOS;
-const getos_1 = __importDefault(__nccwpck_require__(5086));
-async function getOS() {
-    const detectedSystem = await new Promise((resolve, reject) => {
-        (0, getos_1.default)((error, os) => {
-            os ? resolve(os) : reject(error || "No OS detected");
-        });
-    });
-    return detectedSystem.os;
+exports.install = install;
+const os = __importStar(__nccwpck_require__(857));
+const path = __importStar(__nccwpck_require__(6928));
+const core = __importStar(__nccwpck_require__(7484));
+const toolCache = __importStar(__nccwpck_require__(3472));
+const swift_versions_1 = __nccwpck_require__(9637);
+const gpg_1 = __nccwpck_require__(2192);
+async function install(version, system) {
+    if (os.platform() !== "linux") {
+        core.error("Trying to run linux installer on non-linux os");
+        return;
+    }
+    let swiftPath = toolCache.find(`swift-${system.name}`, version);
+    if (swiftPath === null || swiftPath.trim().length == 0) {
+        core.debug(`No matching installation found`);
+        await (0, gpg_1.setupKeys)(system);
+        const swiftPkg = (0, swift_versions_1.swiftPackage)(version, system);
+        let { pkg, signature } = await download(swiftPkg);
+        await (0, gpg_1.verify)(signature, pkg);
+        swiftPath = await unpack(pkg, swiftPkg.name, version, system);
+    }
+    else {
+        core.debug("Matching installation found");
+    }
+    core.debug("Adding swift to path");
+    let binPath = path.join(swiftPath, "/usr/bin");
+    core.addPath(binPath);
+    core.debug("Swift installed");
+}
+async function download({ url, name }) {
+    core.debug("Downloading swift for linux");
+    let [pkg, signature] = await Promise.all([
+        toolCache.downloadTool(url),
+        toolCache.downloadTool(`${url}.sig`),
+    ]);
+    core.debug("Swift download complete");
+    return { pkg, signature, name };
+}
+async function unpack(packagePath, packageName, version, system) {
+    core.debug("Extracting package");
+    let extractPath = await toolCache.extractTar(packagePath);
+    core.debug("Package extracted");
+    let cachedPath = await toolCache.cacheDir(path.join(extractPath, packageName), `swift-${system.name}`, version);
+    core.debug("Package cached");
+    return cachedPath;
 }
 
 
 /***/ }),
 
-/***/ 352:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ 5771:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.tempDir = tempDir;
-const fs_1 = __nccwpck_require__(9896);
-const os_1 = __nccwpck_require__(857);
-const path_1 = __nccwpck_require__(6928);
-/**
- * Crates a new temporary directory
- * @param suffix Suffix to use for the temporary directory
- * @returns Temporary directory
- */
-function tempDir(suffix = "swiftly-") {
-    return (0, fs_1.mkdtempSync)((0, path_1.join)((0, os_1.tmpdir)(), suffix));
+exports.install = install;
+const core = __importStar(__nccwpck_require__(7484));
+const toolCache = __importStar(__nccwpck_require__(3472));
+const path = __importStar(__nccwpck_require__(6928));
+const swift_versions_1 = __nccwpck_require__(9637);
+const get_version_1 = __nccwpck_require__(8121);
+async function install(version, system) {
+    const toolchainName = `swift ${version}`;
+    const toolchain = await toolchainVersion(toolchainName);
+    if (toolchain !== version) {
+        let swiftPath = toolCache.find("swift-macOS", version);
+        if (swiftPath === null || swiftPath.trim().length == 0) {
+            core.debug(`No matching installation found`);
+            const pkg = (0, swift_versions_1.swiftPackage)(version, system);
+            const path = await download(pkg);
+            const extracted = await unpack(pkg, path, version);
+            swiftPath = extracted;
+        }
+        else {
+            core.debug("Matching installation found");
+        }
+        core.debug("Adding swift to path");
+        let binPath = path.join(swiftPath, "/usr/bin");
+        core.addPath(binPath);
+        core.debug("Swift installed");
+    }
+    core.exportVariable("TOOLCHAINS", toolchainName);
+}
+async function toolchainVersion(requestedVersion) {
+    return await (0, get_version_1.getVersion)("xcrun", [
+        "--toolchain",
+        requestedVersion,
+        "--run",
+        "swift",
+        "--version",
+    ]);
+}
+async function download({ url }) {
+    core.debug("Downloading swift for macOS");
+    return toolCache.downloadTool(url);
+}
+async function unpack({ name }, packagePath, version) {
+    core.debug("Extracting package");
+    const unpackedPath = await toolCache.extractXar(packagePath);
+    const extractedPath = await toolCache.extractTar(path.join(unpackedPath, `${name}-package.pkg`, "Payload"));
+    core.debug("Package extracted");
+    const cachedPath = await toolCache.cacheDir(extractedPath, "swift-macOS", version);
+    core.debug("Package cached");
+    return cachedPath;
 }
 
 
@@ -288,12 +371,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const fs_1 = __importDefault(__nccwpck_require__(9896));
 const os_1 = __nccwpck_require__(857);
-const core_1 = __nccwpck_require__(582);
-const swiftly_1 = __nccwpck_require__(1863);
-const swift_1 = __nccwpck_require__(1636);
-const core_2 = __nccwpck_require__(7484);
-const windows_1 = __nccwpck_require__(4698);
 const core = __importStar(__nccwpck_require__(7484));
+const system = __importStar(__nccwpck_require__(6296));
+const versions = __importStar(__nccwpck_require__(9637));
+const macos = __importStar(__nccwpck_require__(5771));
+const linux = __importStar(__nccwpck_require__(6876));
+const windows = __importStar(__nccwpck_require__(1299));
+const get_version_1 = __nccwpck_require__(8121);
 const axios_1 = __importStar(__nccwpck_require__(7269));
 async function validateSubscription() {
     const eventPath = process.env.GITHUB_EVENT_PATH;
@@ -330,43 +414,28 @@ async function validateSubscription() {
         core.info("Timeout or API not reachable. Continuing to next step.");
     }
 }
-/**
- * Main entry point for the action
- */
 async function run() {
     try {
         await validateSubscription();
-        const version = (0, core_2.getInput)("swift-version", { required: true });
-        const skipVerifySignature = (0, core_2.getBooleanInput)("skip-verify-signature");
-        const os = await (0, core_1.getOS)();
-        // First check if the requested version is already installed
-        let current = await (0, swift_1.currentVersion)().catch(() => null);
-        if ((0, core_1.equalVersions)(version, current)) {
-            (0, core_2.info)(`Swift ${version} is already installed`);
-            (0, core_2.setOutput)("version", version);
-            return;
+        const requestedVersion = core.getInput("swift-version", { required: true });
+        let platform = await system.getSystem();
+        let version = versions.verify(requestedVersion, platform);
+        switch (platform.os) {
+            case system.OS.MacOS:
+                await macos.install(version, platform);
+                break;
+            case system.OS.Ubuntu:
+                await linux.install(version, platform);
+                break;
+            case system.OS.Windows:
+                await windows.install(version, platform);
         }
-        // Setup Swiftly on the runner
-        switch (os) {
-            case "darwin":
-                await (0, swiftly_1.setupMacOS)();
-                await (0, swiftly_1.installSwift)(version);
-                break;
-            case "linux":
-                await (0, swiftly_1.setupLinux)({ skipVerifySignature });
-                await (0, swiftly_1.installSwift)(version);
-                break;
-            case "win32":
-                await (0, windows_1.setupWindows)(version);
-                break;
-        }
-        // Verify the requested version is now installed
-        current = await (0, swift_1.currentVersion)();
-        if ((0, core_1.equalVersions)(version, current)) {
-            (0, core_2.setOutput)("version", version);
+        const current = await (0, get_version_1.getVersion)();
+        if (current === version) {
+            core.setOutput("version", version);
         }
         else {
-            (0, core_2.error)(`Failed to setup requested Swift version. requested: ${version}, actual: ${current}`);
+            core.error(`Failed to setup requested swift version. requestd: ${version}, actual: ${current}`);
         }
     }
     catch (error) {
@@ -377,7 +446,7 @@ async function run() {
         else {
             dump = `${error}`;
         }
-        (0, core_2.setFailed)(`Unexpected error, unable to continue. Please report at https://github.com/step-security/swift-actions-setup-swift/issues${os_1.EOL}${dump}`);
+        core.setFailed(`Unexpected error, unable to continue. Please report at https://github.com/step-security/swift-actions-setup-swift/issues${os_1.EOL}${dump}`);
     }
 }
 run();
@@ -385,37 +454,267 @@ run();
 
 /***/ }),
 
-/***/ 5128:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ 6296:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.currentVersion = currentVersion;
-exports.versionFromString = versionFromString;
-const core_1 = __nccwpck_require__(582);
-/**
- * Get the current swift version
- * @returns Current swift version
- */
-async function currentVersion() {
-    const output = await (0, core_1.cmd)("swift", "--version");
-    return versionFromString(output);
+exports.OS = void 0;
+exports.getSystem = getSystem;
+const getos_1 = __importDefault(__nccwpck_require__(5086));
+var OS;
+(function (OS) {
+    OS[OS["MacOS"] = 0] = "MacOS";
+    OS[OS["Ubuntu"] = 1] = "Ubuntu";
+    OS[OS["Windows"] = 2] = "Windows";
+})(OS || (exports.OS = OS = {}));
+(function (OS) {
+    function all() {
+        return [OS.MacOS, OS.Ubuntu, OS.Windows];
+    }
+    OS.all = all;
+})(OS || (exports.OS = OS = {}));
+const AVAILABLE_OS = {
+    macOS: ["latest", "14", "13", "12", "11"],
+    Ubuntu: ["latest", "24.04", "22.04", "20.04"],
+    Windows: ["latest", "10"],
+};
+async function getSystem() {
+    let detectedSystem = await new Promise((resolve, reject) => {
+        (0, getos_1.default)((error, os) => {
+            os ? resolve(os) : reject(error || "No OS detected");
+        });
+    });
+    let system;
+    switch (detectedSystem.os) {
+        case "darwin":
+            system = { os: OS.MacOS, version: "latest", name: "macOS" };
+            break;
+        case "linux":
+            if (detectedSystem.dist !== "Ubuntu") {
+                throw new Error(`"${detectedSystem.dist}" is not a supported linux distribution`);
+            }
+            system = {
+                os: OS.Ubuntu,
+                version: detectedSystem.release,
+                name: "Ubuntu",
+            };
+            break;
+        case "win32":
+            system = { os: OS.Windows, version: "latest", name: "Windows" };
+            break;
+        default:
+            throw new Error(`"${detectedSystem.os}" is not a supported platform`);
+    }
+    if (!AVAILABLE_OS[system.name].includes(system.version)) {
+        throw new Error(`Version "${system.version}" of ${system.name} is not supported`);
+    }
+    return system;
 }
-function versionFromString(subject) {
-    const match = subject.match(/Swift\ version (?<version>[0-9]+\.[0-9+]+(\.[0-9]+)?)/) || {
-        groups: { version: null },
+
+
+/***/ }),
+
+/***/ 9637:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
     };
-    if (!match.groups || !match.groups.version) {
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.swiftPackage = swiftPackage;
+exports.verify = verify;
+const semver = __importStar(__nccwpck_require__(2088));
+const core = __importStar(__nccwpck_require__(7484));
+const os_1 = __nccwpck_require__(6296);
+const VERSIONS_LIST = [
+    ["6.2.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.1.3", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.1.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.1.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.0.3", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.0.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.0.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.0.0", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["6.0", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.10.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.10", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.9.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.9.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.9", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.8.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.8", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.7.3", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.7.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.7.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.7", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.6.3", os_1.OS.all()],
+    ["5.6.2", os_1.OS.all()],
+    ["5.6.1", os_1.OS.all()],
+    ["5.6", os_1.OS.all()],
+    ["5.5.3", os_1.OS.all()],
+    ["5.5.2", os_1.OS.all()],
+    ["5.5.1", os_1.OS.all()],
+    ["5.5", os_1.OS.all()],
+    ["5.4.3", os_1.OS.all()],
+    ["5.4.2", os_1.OS.all()],
+    ["5.4.1", os_1.OS.all()],
+    ["5.4", os_1.OS.all()],
+    ["5.3.3", os_1.OS.all()],
+    ["5.3.2", os_1.OS.all()],
+    ["5.3.1", os_1.OS.all()],
+    ["5.3", os_1.OS.all()],
+    ["5.2.5", [os_1.OS.Ubuntu]],
+    ["5.2.4", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.2.3", [os_1.OS.Ubuntu]],
+    ["5.2.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.2.1", [os_1.OS.Ubuntu]],
+    ["5.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.1.5", [os_1.OS.Ubuntu]],
+    ["5.1.4", [os_1.OS.Ubuntu]],
+    ["5.1.3", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.1.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.1.1", [os_1.OS.Ubuntu]],
+    ["5.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.0.3", [os_1.OS.Ubuntu]],
+    ["5.0.2", [os_1.OS.Ubuntu]],
+    ["5.0.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["5.0", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["4.2.4", [os_1.OS.Ubuntu]],
+    ["4.2.3", [os_1.OS.Ubuntu]],
+    ["4.2.2", [os_1.OS.Ubuntu]],
+    ["4.2.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["4.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["4.1.3", [os_1.OS.Ubuntu]],
+    ["4.1.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["4.1.1", [os_1.OS.Ubuntu]],
+    ["4.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["4.0.3", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["4.0.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["4.0", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["3.1.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["3.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["3.0.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["3.0.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["3.0", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["2.2.1", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+    ["2.2", [os_1.OS.MacOS, os_1.OS.Ubuntu]],
+];
+const AVAILABLE_VERSIONS = VERSIONS_LIST.map(([version, os]) => {
+    const semverVersion = semver.coerce(version);
+    return [semverVersion, os];
+});
+function notEmpty(value) {
+    return value !== null && value !== undefined;
+}
+function swiftPackage(version, system) {
+    let platform;
+    let archiveFile;
+    let archiveName;
+    switch (system.os) {
+        case os_1.OS.MacOS:
+            platform = "xcode";
+            archiveName = `swift-${version}-RELEASE-osx`;
+            archiveFile = `${archiveName}.pkg`;
+            break;
+        case os_1.OS.Ubuntu:
+            platform = `ubuntu${system.version.replace(/\D/g, "")}`;
+            archiveName = `swift-${version}-RELEASE-ubuntu${system.version}`;
+            archiveFile = `${archiveName}.tar.gz`;
+            break;
+        case os_1.OS.Windows:
+            platform = "windows10";
+            archiveName = `swift-${version}-RELEASE-windows10.exe`;
+            archiveFile = archiveName;
+            break;
+        default:
+            throw new Error("Cannot create download URL for an unsupported platform");
+    }
+    return {
+        url: `https://swift.org/builds/swift-${version}-release/${platform}/swift-${version}-RELEASE/${archiveFile}`,
+        name: archiveName,
+        version: version,
+    };
+}
+function verify(version, system) {
+    let range = semver.validRange(version);
+    if (range === null) {
+        throw new Error("Version must be a valid semver format.");
+    }
+    core.debug(`Resolved range ${range}`);
+    let systemVersions = AVAILABLE_VERSIONS.filter(([_, os]) => os.includes(system.os)).map(([version, _]) => version);
+    let matchingVersion = evaluateVersions(systemVersions, version);
+    if (matchingVersion === null) {
+        throw new Error(`Version "${version}" is not available`);
+    }
+    core.debug(`Found matching version ${matchingVersion}`);
+    return matchingVersion;
+}
+// TODO - should we just export this from @actions/tool-cache? Lifted directly from there
+function evaluateVersions(versions, versionSpec) {
+    let version = null;
+    versions = versions.sort((a, b) => {
+        if (semver.gt(a, b)) {
+            return 1;
+        }
+        return -1;
+    });
+    for (let i = versions.length - 1; i >= 0; i--) {
+        const potential = versions[i];
+        const satisfied = semver.satisfies(potential, versionSpec);
+        if (satisfied) {
+            version = potential;
+            break;
+        }
+    }
+    if (version === null) {
         return null;
     }
-    return match.groups.version;
+    return `${version.major}.${version.minor}${version.patch > 0 ? `.${version.patch}` : ""}`;
 }
 
 
 /***/ }),
 
-/***/ 1636:
+/***/ 1705:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -431,246 +730,246 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__nccwpck_require__(5128), exports);
-
-
-/***/ }),
-
-/***/ 1863:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+exports.vsRequirement = vsRequirement;
+exports.setupVsTools = setupVsTools;
+exports.getVsWherePath = getVsWherePath;
+const os = __importStar(__nccwpck_require__(857));
+const fs = __importStar(__nccwpck_require__(9896));
+const path = __importStar(__nccwpck_require__(6928));
+const semver = __importStar(__nccwpck_require__(2088));
+const io = __importStar(__nccwpck_require__(4994));
+const core = __importStar(__nccwpck_require__(7484));
+const exec_1 = __nccwpck_require__(5236);
+/// Setup different version and component requirement
+/// based on swift versions if required
+function vsRequirement({ version }) {
+    const recVersion = "10.0.17763";
+    const currentVersion = os.release();
+    const useVersion = semver.gte(currentVersion, recVersion)
+        ? currentVersion
+        : recVersion;
+    return {
+        version: "16",
+        components: [
+            "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+            `Microsoft.VisualStudio.Component.Windows10SDK.${semver.patch(useVersion)}`,
+        ],
+    };
+}
+/// Do swift version based additional support files setup
+async function setupSupportFiles({ version }, vsInstallPath) {
+    if (semver.lt(version, "5.4.2")) {
+        /// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-170
+        const nativeToolsScriptx86 = path.join(vsInstallPath, "VC\\Auxiliary\\Build\\vcvars32.bat");
+        const copyCommands = [
+            'copy /Y %SDKROOT%\\usr\\share\\ucrt.modulemap "%UniversalCRTSdkDir%\\Include\\%UCRTVersion%\\ucrt\\module.modulemap"',
+            'copy /Y %SDKROOT%\\usr\\share\\visualc.modulemap "%VCToolsInstallDir%\\include\\module.modulemap"',
+            'copy /Y %SDKROOT%\\usr\\share\\visualc.apinotes "%VCToolsInstallDir%\\include\\visualc.apinotes"',
+            'copy /Y %SDKROOT%\\usr\\share\\winsdk.modulemap "%UniversalCRTSdkDir%\\Include\\%UCRTVersion%\\um\\module.modulemap"',
+        ].join("&&");
+        let code = await (0, exec_1.exec)("cmd /k", [nativeToolsScriptx86], {
+            failOnStdErr: true,
+            input: Buffer.from(copyCommands, "utf8"),
+        });
+        core.info(`Ran command for swift and exited with code: ${code}`);
     }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__nccwpck_require__(6079), exports);
-__exportStar(__nccwpck_require__(2293), exports);
-
-
-/***/ }),
-
-/***/ 2293:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+}
+/// set up required visual studio tools for swift on windows
+async function setupVsTools(pkg) {
+    /// https://github.com/microsoft/vswhere/wiki/Find-MSBuild
+    /// get visual studio properties
+    const vswhereExe = await getVsWherePath();
+    const req = vsRequirement(pkg);
+    const vsWhereExec = `-products * ` +
+        `-format json -utf8 ` +
+        `-latest -version "${req.version}"`;
+    let payload = "";
+    const options = {};
+    options.listeners = {
+        stdout: (data) => {
+            payload = payload.concat(data.toString("utf-8"));
+        },
+        stderr: (data) => {
+            core.error(data.toString());
+        },
+    };
+    // execute the find putting the result of the command in the options vsInstallPath
+    await (0, exec_1.exec)(`"${vswhereExe}" ${vsWhereExec}`, [], options);
+    let vs = JSON.parse(payload)[0];
+    if (!vs.installationPath) {
+        throw new Error(`Unable to find any visual studio installation for version: ${req.version}.`);
     }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__nccwpck_require__(8187), exports);
-__exportStar(__nccwpck_require__(4296), exports);
-
-
-/***/ }),
-
-/***/ 8187:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupLinux = setupLinux;
-const os_1 = __nccwpck_require__(857);
-const core_1 = __nccwpck_require__(7484);
-const tool_cache_1 = __nccwpck_require__(3472);
-const gpg_1 = __nccwpck_require__(4742);
-const core_2 = __nccwpck_require__(582);
-/**
- * Setup Swiftly on Linux
- */
-async function setupLinux(options) {
-    await prerequisites();
-    let path = (0, tool_cache_1.find)("swiftly", "1.1.0");
-    if (!path) {
-        path = await download(options);
+    /// https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022
+    /// install required visual studio components
+    const vsInstallerExec = `modify --installPath "${vs.installationPath}"` +
+        req.components.reduce((previous, current) => `${previous} --add "${current}"`, "") +
+        ` --quiet`;
+    // install required visual studio components
+    const code = await (0, exec_1.exec)(`"${vs.properties.setupEngineFilePath}" ${vsInstallerExec}`, []);
+    if (code != 0) {
+        throw new Error(`Visual Studio installer failed to install required components with exit code: ${code}.`);
+    }
+    await setupSupportFiles(pkg, vs.installationPath);
+}
+/// Get vswhere and vs_installer paths
+/// Borrowed from setup-msbuild action: https://github.com/microsoft/setup-msbuild
+/// From source file: https://github.com/microsoft/setup-msbuild/blob/master/src/main.ts
+async function getVsWherePath() {
+    // check to see if we are using a specific path for vswhere
+    let vswhereToolExe = "";
+    // Env variable for self-hosted runner to provide custom path
+    const VSWHERE_PATH = process.env.VSWHERE_PATH;
+    if (VSWHERE_PATH) {
+        // specified a path for vswhere, use it
+        core.debug(`Using given vswhere-path: ${VSWHERE_PATH}`);
+        vswhereToolExe = path.join(VSWHERE_PATH, "vswhere.exe");
     }
     else {
-        (0, core_1.debug)("Found cached Swiftly");
+        // check in PATH to see if it is there
+        try {
+            const vsWhereInPath = await io.which("vswhere", true);
+            core.debug(`Found tool in PATH: ${vsWhereInPath}`);
+            vswhereToolExe = vsWhereInPath;
+        }
+        catch {
+            // fall back to VS-installed path
+            vswhereToolExe = path.join(process.env["ProgramFiles(x86)"], "Microsoft Visual Studio", "Installer", "vswhere.exe");
+            core.debug(`Trying Visual Studio-installed path: ${vswhereToolExe}`);
+        }
     }
-    (0, core_1.addPath)(path);
-    (0, core_1.debug)(`Added Swiftly to PATH: ${path}`);
+    if (!fs.existsSync(vswhereToolExe)) {
+        throw new Error("Action requires the path to where vswhere.exe exists");
+    }
+    return vswhereToolExe;
 }
-async function download({ skipVerifySignature = false } = {}) {
-    (0, core_1.info)("Downloading Swiftly");
-    const m = (0, os_1.machine)();
-    const url = `https://download.swift.org/swiftly/linux/swiftly-1.1.0-${m}.tar.gz`;
-    (0, core_1.debug)(`Downloading Swiftly from ${url}`);
-    const [pkg, signature] = await Promise.all([
-        (0, tool_cache_1.downloadTool)(url),
-        (0, tool_cache_1.downloadTool)(`${url}.sig`),
+
+
+/***/ }),
+
+/***/ 1299:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.install = install;
+const os = __importStar(__nccwpck_require__(857));
+const fs = __importStar(__nccwpck_require__(9896));
+const core = __importStar(__nccwpck_require__(7484));
+const toolCache = __importStar(__nccwpck_require__(3472));
+const path = __importStar(__nccwpck_require__(6928));
+const exec_1 = __nccwpck_require__(5236);
+const swift_versions_1 = __nccwpck_require__(9637);
+//import { setupKeys, verify } from "./gpg";
+const visual_studio_1 = __nccwpck_require__(1705);
+async function install(version, system) {
+    if (os.platform() !== "win32") {
+        core.error("Trying to run windows installer on non-windows os");
+        return;
+    }
+    const swiftPkg = (0, swift_versions_1.swiftPackage)(version, system);
+    let swiftPath = toolCache.find(`swift-${system.name}`, version);
+    if (swiftPath === null || swiftPath.trim().length == 0) {
+        core.debug(`No cached installer found`);
+        //await setupKeys(system);
+        let { exe, signature } = await download(swiftPkg);
+        //await verify(signature, exe);
+        const exePath = await toolCache.cacheFile(exe, swiftPkg.name, `swift-${system.name}`, version);
+        swiftPath = path.join(exePath, swiftPkg.name);
+    }
+    else {
+        core.debug("Cached installer found");
+    }
+    core.debug("Running installer");
+    const options = {};
+    options.listeners = {
+        stdout: (data) => {
+            core.info(data.toString());
+        },
+        stderr: (data) => {
+            core.error(data.toString());
+        },
+    };
+    let code = await (0, exec_1.exec)(`"${swiftPath}" -q`, []);
+    const systemDrive = process.env.SystemDrive ?? "C:";
+    const swiftLibPath = path.join(systemDrive, "Library");
+    const swiftInstallPath = path.join(swiftLibPath, "Developer", "Toolchains", "unknown-Asserts-development.xctoolchain", "usr", "bin");
+    if (code != 0 || !fs.existsSync(swiftInstallPath)) {
+        throw new Error(`Swift installer failed with exit code: ${code}`);
+    }
+    core.addPath(swiftInstallPath);
+    const additionalPaths = [
+        path.join(swiftLibPath, "Swift-development", "bin"),
+        path.join(swiftLibPath, "icu-67", "usr", "bin"),
+    ];
+    additionalPaths.forEach((value, index, array) => core.addPath(value));
+    core.debug(`Swift installed at "${swiftInstallPath}"`);
+    await (0, visual_studio_1.setupVsTools)(swiftPkg);
+}
+async function download({ url, name }) {
+    core.debug("Downloading Swift for windows");
+    let [exe, signature] = await Promise.all([
+        toolCache.downloadTool(url),
+        toolCache.downloadTool(`${url}.sig`),
     ]);
-    if (skipVerifySignature) {
-        (0, core_1.info)("Skipping signature verification");
-    }
-    else {
-        await (0, gpg_1.verify)(signature, pkg);
-    }
-    const extracted = await (0, tool_cache_1.extractTar)(pkg);
-    (0, core_1.debug)(`Extracted Swiftly to ${extracted}`);
-    const cached = await (0, tool_cache_1.cacheDir)(extracted, "swiftly", "1.1.0");
-    (0, core_1.debug)(`Cached Swiftly to ${cached}`);
-    return cached;
-}
-async function prerequisites() {
-    await (0, core_2.cmd)("sudo", "apt-get", "update");
-    await (0, core_2.cmd)("sudo", "apt-get", "install", "-y", "libcurl4-openssl-dev");
-}
-
-
-/***/ }),
-
-/***/ 4296:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupMacOS = setupMacOS;
-const tool_cache_1 = __nccwpck_require__(3472);
-const core_1 = __nccwpck_require__(582);
-const core_2 = __nccwpck_require__(7484);
-const path_1 = __nccwpck_require__(6928);
-const os_1 = __nccwpck_require__(857);
-/**
- * Setup Swiftly on macOS
- */
-async function setupMacOS() {
-    let path = (0, tool_cache_1.find)("swiftly", "1.1.0");
-    if (!path) {
-        path = await download();
-    }
-    else {
-        (0, core_2.debug)("Found cached Swiftly");
-    }
-    (0, core_2.addPath)(path);
-    (0, core_2.debug)(`Added Swiftly to PATH: ${path}`);
-}
-async function download() {
-    const tmpPath = (0, core_1.tempDir)();
-    const pkg = await (0, tool_cache_1.downloadTool)("https://download.swift.org/swiftly/darwin/swiftly.pkg", (0, path_1.join)(tmpPath, "swiftly.pkg"));
-    await (0, core_1.cmd)("installer", "-pkg", pkg, "-target", "CurrentUserHomeDirectory");
-    return (0, path_1.join)((0, os_1.homedir)(), ".swiftly", "bin");
-}
-
-
-/***/ }),
-
-/***/ 6079:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installSwift = installSwift;
-const core_1 = __nccwpck_require__(7484);
-const core_2 = __nccwpck_require__(582);
-const fs_1 = __nccwpck_require__(9896);
-const path_1 = __nccwpck_require__(6928);
-async function swiftly(...args) {
-    return await (0, core_2.cmd)("swiftly", ...args);
-}
-function setupPaths() {
-    const tmpPath = (0, core_2.tempDir)();
-    const homeDir = process.env.SWIFTLY_HOME_DIR || (0, path_1.join)(tmpPath, "home");
-    const binDir = process.env.SWIFTLY_BIN_DIR || (0, path_1.join)(tmpPath, "bin");
-    (0, core_1.exportVariable)("SWIFTLY_HOME_DIR", homeDir);
-    (0, core_1.exportVariable)("SWIFTLY_BIN_DIR", binDir);
-    (0, core_1.addPath)(binDir);
-    (0, core_1.debug)(`Using Swiftly home dir: ${homeDir}`);
-    (0, core_1.debug)(`Using Swiftly bin dir: ${binDir}`);
-    return tmpPath;
-}
-/**
- * Install Swift using Swiftly
- * @param version Version to install
- */
-async function installSwift(version) {
-    const tmpPath = setupPaths();
-    (0, core_1.info)("Initializing Swiftly");
-    await swiftly("init", "--skip-install", "--quiet-shell-followup", "--assume-yes", "--no-modify-profile");
-    // Sometimes Swiftly needs to perform additional actions after installation
-    const postInstallScriptPath = (0, path_1.join)(tmpPath, "post-install.sh");
-    (0, core_1.info)(`Installing Swift ${version}`);
-    await swiftly("install", "--use", version, "--assume-yes", "--post-install-file", postInstallScriptPath);
-    // Run the post-install script if it exists
-    if ((0, fs_1.existsSync)(postInstallScriptPath)) {
-        (0, core_1.info)("Running post-install script");
-        await (0, core_2.cmd)("bash", postInstallScriptPath);
-    }
-    const location = await swiftly("use", "--print-location");
-    (0, core_1.debug)(`Swiftly installed Swift to ${location}`);
-    (0, core_1.addPath)(location);
-}
-
-
-/***/ }),
-
-/***/ 4698:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__nccwpck_require__(8943), exports);
-
-
-/***/ }),
-
-/***/ 8943:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupWindows = setupWindows;
-/**
- * Setup Swift on Windows as theres no support for Swiftly yet.
- */
-async function setupWindows(version) {
-    throw Error("Windows is not supported yet");
+    core.debug("Swift download complete");
+    return { exe, signature, name };
 }
 
 

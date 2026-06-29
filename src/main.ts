@@ -1,18 +1,12 @@
 import fs from "fs";
 import { EOL } from "os";
-import { equalVersions, getOS } from "./core";
-import { installSwift, setupLinux, setupMacOS } from "./swiftly";
-import { currentVersion } from "./swift";
-import {
-  error,
-  getBooleanInput,
-  getInput,
-  info,
-  setFailed,
-  setOutput,
-} from "@actions/core";
-import { setupWindows } from "./windows";
 import * as core from "@actions/core";
+import * as system from "./os";
+import * as versions from "./swift-versions";
+import * as macos from "./macos-install";
+import * as linux from "./linux-install";
+import * as windows from "./windows-install";
+import { getVersion } from "./get-version";
 import axios, { isAxiosError } from "axios";
 
 async function validateSubscription() {
@@ -46,15 +40,15 @@ async function validateSubscription() {
     await axios.post(
       `https://agent.api.stepsecurity.io/v1/github/${process.env.GITHUB_REPOSITORY}/actions/maintained-actions-subscription`,
       body,
-      { timeout: 3000 },
+      { timeout: 3000 }
     );
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 403) {
       core.error(
-        `\u001b[1;31mThis action requires a StepSecurity subscription for private repositories.\u001b[0m`,
+        `\u001b[1;31mThis action requires a StepSecurity subscription for private repositories.\u001b[0m`
       );
       core.error(
-        `\u001b[31mLearn how to enable a subscription: ${docsUrl}\u001b[0m`,
+        `\u001b[31mLearn how to enable a subscription: ${docsUrl}\u001b[0m`
       );
       process.exit(1);
     }
@@ -62,46 +56,31 @@ async function validateSubscription() {
   }
 }
 
-/**
- * Main entry point for the action
- */
 async function run() {
   try {
     await validateSubscription();
-    const version = getInput("swift-version", { required: true });
-    const skipVerifySignature = getBooleanInput("skip-verify-signature");
-    const os = await getOS();
+    const requestedVersion = core.getInput("swift-version", { required: true });
 
-    // First check if the requested version is already installed
-    let current = await currentVersion().catch(() => null);
-    if (equalVersions(version, current)) {
-      info(`Swift ${version} is already installed`);
-      setOutput("version", version);
-      return;
+    let platform = await system.getSystem();
+    let version = versions.verify(requestedVersion, platform);
+
+    switch (platform.os) {
+      case system.OS.MacOS:
+        await macos.install(version, platform);
+        break;
+      case system.OS.Ubuntu:
+        await linux.install(version, platform);
+        break;
+      case system.OS.Windows:
+        await windows.install(version, platform);
     }
 
-    // Setup Swiftly on the runner
-    switch (os) {
-      case "darwin":
-        await setupMacOS();
-        await installSwift(version);
-        break;
-      case "linux":
-        await setupLinux({ skipVerifySignature });
-        await installSwift(version);
-        break;
-      case "win32":
-        await setupWindows(version);
-        break;
-    }
-
-    // Verify the requested version is now installed
-    current = await currentVersion();
-    if (equalVersions(version, current)) {
-      setOutput("version", version);
+    const current = await getVersion();
+    if (current === version) {
+      core.setOutput("version", version);
     } else {
-      error(
-        `Failed to setup requested Swift version. requested: ${version}, actual: ${current}`,
+      core.error(
+        `Failed to setup requested swift version. requestd: ${version}, actual: ${current}`
       );
     }
   } catch (error) {
@@ -112,8 +91,8 @@ async function run() {
       dump = `${error}`;
     }
 
-    setFailed(
-      `Unexpected error, unable to continue. Please report at https://github.com/step-security/swift-actions-setup-swift/issues${EOL}${dump}`,
+    core.setFailed(
+      `Unexpected error, unable to continue. Please report at https://github.com/step-security/swift-actions-setup-swift/issues${EOL}${dump}`
     );
   }
 }
