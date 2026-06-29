@@ -19,9 +19,6 @@
 
 [GitHub Action](https://github.com/features/actions) that will setup a [Swift](https://swift.org) environment with a specific version using [Swiftly](https://www.swift.org/swiftly/documentation/swiftlydocs/). Works on both Ubuntu and macOS runners.
 
-> [!IMPORTANT]
-> Version 3 is currently in beta. Please report any issues you encounter. To use legacy version 2, use `@v2`.
-
 ## Usage
 
 To run the action with the latest swift version available, simply add the action as a step in your workflow:
