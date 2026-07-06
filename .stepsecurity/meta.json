@@ -1,0 +1,18 @@
+{
+   "schema_version": "1",
+   "onboarding_type": "copied",
+   "archived": false,
+   "maintained_action_name": "step-security/swift-actions-setup-swift",
+   "upstream_full_repo_name": "swift-actions/setup-swift",
+   "action_type": "node",
+   "last_release": {
+     "tag_name": "v2.4.0",
+     "created_at": "2026-06-29T16:49:13Z",
+     "published_at": "2026-06-30T22:49:13Z"
+   },
+   "sync": {
+     "ignore_presets": [
+       "defaults_v1"
+     ]
+   }
+ }
