@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/step-security/swift-actions-setup-swift#readme",
   "dependencies": {
-    "@actions/core": "^2.0.0",
+    "@actions/core": "^3.0.1",
     "@actions/exec": "^2.0.0",
     "@actions/io": "^2.0.0",
     "@actions/tool-cache": "^3.0.0",
