@@ -11,7 +11,7 @@ on:
 jobs:
   unit-test:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Harden the runner (Audit all outbound calls)
       uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
@@ -31,7 +31,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ${{ github.actor == 'dependabot[bot]' && fromJSON('["ubuntu-latest"]') || fromJSON('["ubuntu-latest", "macos-latest"]') }}
+        os: ${{ github.actor == 'dependabot[bot]' && fromJSON('["ubuntu-24.04"]') || fromJSON('["ubuntu-24.04", "macos-latest"]') }}
         swift: ["6.2"]
         include:
         - os: windows-latest
